@@ -73,14 +73,14 @@
 
 <script>
   // Set today's date automatically
-window.addEventListener('DOMContentLoaded', () => {
+  window.addEventListener('DOMContentLoaded', () => {
   const today = new Date();
   const yyyy = today.getFullYear();
   const mm = String(today.getMonth() + 1).padStart(2, '0'); // months are 0-11
   const dd = String(today.getDate()).padStart(2, '0');
   
   document.querySelector('input[name="date"]').value = `${yyyy}-${mm}-${dd}`;
-});
+  });
 document.addEventListener('DOMContentLoaded', function() {
 
   const robotSelect = document.getElementById('robotModel');
