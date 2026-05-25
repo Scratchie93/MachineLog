@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Machine Log Form</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    max-width: 500px;
+  }
+  label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+  }
+  select, input, textarea, button {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+  button {
+    margin-top: 20px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #1d4ed8;
+  }
+.success { color: green; margin-top: 10px; }
+.error { color: red; margin-top: 10px; }
+  select:disabled {
+    background: #f3f3f3;
+    color: #888;
+  }
+</style>
+</head>
+<body>
+
+<form id="machineForm">
+  <label for="robotModel">Robot Model:</label>
+  <select id="robotModel" name="robotModel" required>
+    <option value="">-- Choose a model --</option>
+    <option value="RS8">RS8</option>
+    <option value="P800">P800</option>
+    <option value="P40">P40</option>
+  </select>
+
+  <label for="robotId">Robot ID:</label>
+  <select id="robotId" name="robotId" required disabled>
+    <option value="">-- Select a robot model first --</option>
+  </select>
+
+  <label for="date">Date:</label>
+  <input type="date" id="date" name="date" readonly>
+
+  <label for="comments">Comments:</label>
+  <textarea id="comments" name="comments" placeholder="Enter any notes here..."></textarea>
+
+  <button type="submit">Submit</button>
+  <div id="msg"></div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  const robotSelect = document.getElementById('robotModel');
+  const robotIdSelect = document.getElementById('robotId');
+  const dateInput = document.getElementById('date');
+  const msg = document.getElementById('msg');
+
+  // Auto-populate date
+  const today = new Date().toISOString().split('T')[0];
+  dateInput.value = today;
+
+  const machineLists = {
+    P800: ["1243876", "1243877", "1243878", "1243879", "1255523", "1255524", "1255525"],
+    RS8: ["5342025", "5342026", "5342027", "5342028", "5342029", "5342030"],
+    P40: ["1542532", "1542533", "1542534", "1542535", "1542536", "1542537", "1542538", "1542539", "1542540", "1542541", "1542542", "1542543", "1542544", "1542545", "1542546", "1542547", "1542548", "1542549"]
+  };
+
+  robotSelect.addEventListener('change', function() {
+    const selectedModel = this.value;
+    const robots = machineLists[selectedModel] || [];
+    robotIdSelect.innerHTML = '';
+
+    if (!selectedModel) {
+      robotIdSelect.disabled = true;
+      robotIdSelect.innerHTML = '<option value="">-- Select a robot model first --</option>';
+      return;
+    }
+
+    robotIdSelect.disabled = false;
+    robotIdSelect.innerHTML = '<option value="">-- Choose a Robot ID --</option>';
+    robots.forEach(id => {
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = id;
+      robotIdSelect.appendChild(option);
+    });
+  });
+
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7ZEO1xBIMnLit2FtpqrqbleXRnKOR14VQLDbqjqPp3-RbO0JegIAAjeaDiWDMaANy/exec";
+
+  document.getElementById('machineForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    msg.textContent = 'Submitting...';
+    msg.className = '';
+
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+
+    fetch(SCRIPT_URL, {
+  method: 'POST',
+  mode: 'cors',
+  body: new URLSearchParams(data)
+})
+.then(res => {
+  if (!res.ok) throw new Error('Server returned ' + res.status);
+  return res.json();
+})
+.then(res => {
+  if (res.result === 'success') {
+    msg.textContent = 'Submitted successfully!';
+    msg.className = 'success';
+  } else {
+    msg.textContent = 'Error: ' + (res.error || 'Unknown error');
+    msg.className = 'error';
+  }
+})
+.catch(err => {
+  msg.textContent = 'Failed to fetch: ' + err.message;
+  msg.className = 'error';
+});
+  });
+
+});
+</script>
+</body>
+</html>
+</body>
+</html>
